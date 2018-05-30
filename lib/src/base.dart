@@ -20,6 +20,8 @@ class FlutterWebviewPlugin {
   final _onUrlChanged = new StreamController<String>.broadcast();
   final _onStateChanged = new StreamController<WebViewStateChanged>.broadcast();
   final _onError = new StreamController<String>.broadcast();
+  final _onTitleChanged = new StreamController<String>.broadcast();
+  final _onWebGoBack = new StreamController<Null>.broadcast();
 
   static FlutterWebviewPlugin _instance;
 
@@ -43,6 +45,12 @@ class FlutterWebviewPlugin {
       case "onError":
         _onError.add(call.arguments);
         break;
+      case "onTitleChanged":
+        _onTitleChanged.add(call.arguments["title"]);
+        break;
+      case "onWebGoBack":
+        _onWebGoBack.add(null);
+        break;
     }
   }
 
@@ -56,6 +64,10 @@ class FlutterWebviewPlugin {
   /// content is Map for type: {shouldStart(iOS)|startLoad|finishLoad}
   /// more detail than other events
   Stream<WebViewStateChanged> get onStateChanged => _onStateChanged.stream;
+
+  Stream<String> get onTitleChanged => _onTitleChanged.stream;
+
+  Stream<Null> get onWebGoBack => _onWebGoBack.stream;
 
   /// Start the Webview with [url]
   /// - [withJavascript] enable Javascript or not for the Webview
@@ -124,6 +136,7 @@ class FlutterWebviewPlugin {
     _onUrlChanged.close();
     _onStateChanged.close();
     _onError.close();
+    _onTitleChanged.close();
     _instance = null;
   }
 

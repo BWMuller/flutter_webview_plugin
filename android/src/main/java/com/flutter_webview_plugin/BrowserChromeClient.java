@@ -58,4 +58,14 @@ public class BrowserChromeClient extends WebChromeClient {
         i.setType("image/*");
         ((Activity)activity).startActivityForResult(Intent.createChooser(i, "Image Chooser"), FILE_CHOOSER_RESULT_CODE);
     }
+
+    @Override
+    public void onReceivedTitle(WebView view, String title) {
+        super.onReceivedTitle(view, title);
+        Map<String, Object> data = new HashMap<>();
+        if(title!=null){
+            data.put("title", title);
+            FlutterWebviewPlugin.channel.invokeMethod("onTitleChanged", data);
+        }
+    }
 }
