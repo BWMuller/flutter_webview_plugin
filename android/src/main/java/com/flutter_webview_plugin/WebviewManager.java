@@ -1,4 +1,4 @@
-package com.flutter_webview_plugin;
+package android.src.main.java.com.flutter_webview_plugin;
 
 import android.util.Log;
 import android.annotation.TargetApi;
@@ -14,6 +14,7 @@ import com.flutter_webview_plugin.BrowserClient;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ class WebviewManager {
     WebviewManager(Activity activity, List<String> interceptUrls) {
         this.webView = new WebView(activity);
         WebViewClient webViewClient = new BrowserClient(interceptUrls);
+        WebChromeClient webChromeClient= new BrowserChromeClient(activity);
         webView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -37,6 +39,7 @@ class WebviewManager {
                         case KeyEvent.KEYCODE_BACK:
                             if (webView.canGoBack()) {
                                 webView.goBack();
+                                webGoBack();
                             } else {
                                 close();
                             }
@@ -51,7 +54,6 @@ class WebviewManager {
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
         webView.setWebViewClient(webViewClient);
-        WebChromeClient webChromeClient= new BrowserChromeClient(activity);
         webView.setWebChromeClient(webChromeClient);
     }
 
@@ -102,6 +104,7 @@ class WebviewManager {
     void close(boolean goBack, MethodChannel.Result result) {
         if(goBack && webView.canGoBack()){
             webView.goBack();
+            webGoBack();
         }else {
             if (webView != null) {
                 ViewGroup vg = (ViewGroup) (webView.getParent());
@@ -135,4 +138,9 @@ class WebviewManager {
     void resize(FrameLayout.LayoutParams params) {
         webView.setLayoutParams(params);
     }
+
+    void webGoBack(){
+        FlutterWebviewPlugin.channel.invokeMethod("onWebGoBack", null);
+    }
+
 }
