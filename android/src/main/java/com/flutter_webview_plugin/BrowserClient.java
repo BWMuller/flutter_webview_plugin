@@ -1,6 +1,7 @@
 package com.flutter_webview_plugin;
 
 import android.graphics.Bitmap;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -52,6 +53,11 @@ public class BrowserClient extends WebViewClient {
         data.put("url", url);
         data.put("type", "finishLoad");
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
+    }
 
+    @Override
+    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+        super.onReceivedError(view, errorCode, description, failingUrl);
+        FlutterWebviewPlugin.channel.invokeMethod("onWebError", null);
     }
 }

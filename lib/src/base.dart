@@ -22,6 +22,7 @@ class FlutterWebviewPlugin {
   final _onError = new StreamController<String>.broadcast();
   final _onTitleChanged = new StreamController<String>.broadcast();
   final _onWebGoBack = new StreamController<Null>.broadcast();
+  final _onWebError = new StreamController<Null>.broadcast();
 
   static FlutterWebviewPlugin _instance;
 
@@ -51,6 +52,9 @@ class FlutterWebviewPlugin {
       case "onWebGoBack":
         _onWebGoBack.add(null);
         break;
+      case "onWebError":
+        _onWebError.add(null);
+        break;
     }
   }
 
@@ -68,6 +72,8 @@ class FlutterWebviewPlugin {
   Stream<String> get onTitleChanged => _onTitleChanged.stream;
 
   Stream<Null> get onWebGoBack => _onWebGoBack.stream;
+
+  Stream<Null> get onWebError => _onWebError.stream;
 
   /// Start the Webview with [url]
   /// - [withJavascript] enable Javascript or not for the Webview
