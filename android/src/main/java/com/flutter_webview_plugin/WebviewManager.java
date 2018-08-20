@@ -26,6 +26,7 @@ class WebviewManager {
 
     boolean closed = false;
     WebView webView;
+    String token;
 
     WebviewManager(Activity activity, List<String> interceptUrls) {
         this.webView = new WebView(activity);
@@ -53,6 +54,8 @@ class WebviewManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        webView.addJavascriptInterface(new JavaScriptinterface(token), "App");
         webView.setWebViewClient(webViewClient);
         webView.setWebChromeClient(webChromeClient);
     }
@@ -97,7 +100,7 @@ class WebviewManager {
         if (userAgent != null) {
             webView.getSettings().setUserAgentString(userAgent);
         }
-
+        token = additionalHttpHeaders.get("hexindai-token");
         webView.loadUrl(url, additionalHttpHeaders);
     }
 
@@ -141,6 +144,22 @@ class WebviewManager {
 
     void webGoBack(){
         FlutterWebviewPlugin.channel.invokeMethod("onWebGoBack", null);
+    }
+
+    public class JavaScriptinterface {
+        String token;
+
+        private JavaScriptinterface(String token) {
+            this.token = token;
+        }
+
+        /**
+         * 与js交互时用到的方法，在js里直接调用的
+         */
+        @JavascriptInterface
+        public String getToken() {
+            return token;
+        }
     }
 
 }
