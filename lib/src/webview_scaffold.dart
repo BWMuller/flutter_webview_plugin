@@ -19,25 +19,25 @@ class WebviewScaffold extends StatefulWidget {
   final Widget bottomNavigationBar;
   final bool withZoom;
   final bool withLocalStorage;
-  final Map<String,String> additionalHttpHeaders;
-  WebviewScaffold(
-      {Key key,
-      this.appBar,
-      @required this.url,
-      this.withJavascript,
-      this.clearCache,
-      this.clearCookies,
-      this.enableAppScheme,
-      this.userAgent,
-      this.primary: true,
-      this.persistentFooterButtons,
-      this.bottomNavigationBar,
-      this.withZoom,
-      this.withLocalStorage,
-      this.additionalHttpHeaders,
-      this.interceptUrls,
-      })
-      : super(key: key);
+  final Map<String, String> additionalHttpHeaders;
+
+  WebviewScaffold({
+    Key key,
+    this.appBar,
+    @required this.url,
+    this.withJavascript,
+    this.clearCache,
+    this.clearCookies,
+    this.enableAppScheme,
+    this.userAgent,
+    this.primary: true,
+    this.persistentFooterButtons,
+    this.bottomNavigationBar,
+    this.withZoom,
+    this.withLocalStorage,
+    this.additionalHttpHeaders,
+    this.interceptUrls,
+  }) : super(key: key);
 
   @override
   _WebviewScaffoldState createState() => new _WebviewScaffoldState();
@@ -63,17 +63,18 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
   Widget build(BuildContext context) {
     if (_rect == null) {
       _rect = _buildRect(context);
-      webviewReference.launch(widget.url,
-          withJavascript: widget.withJavascript,
-          clearCache: widget.clearCache,
-          clearCookies: widget.clearCookies,
-          enableAppScheme: widget.enableAppScheme,
-          userAgent: widget.userAgent,
-          rect: _rect,
-          withZoom: widget.withZoom,
-          withLocalStorage: widget.withLocalStorage,
-          additionalHttpHeaders: widget.additionalHttpHeaders,
-          interceptUrls: widget.interceptUrls,
+      webviewReference.launch(
+        widget.url,
+        withJavascript: widget.withJavascript,
+        clearCache: widget.clearCache,
+        clearCookies: widget.clearCookies,
+        enableAppScheme: widget.enableAppScheme,
+        userAgent: widget.userAgent,
+        rect: _rect,
+        withZoom: widget.withZoom,
+        withLocalStorage: widget.withLocalStorage,
+        additionalHttpHeaders: widget.additionalHttpHeaders,
+        interceptUrls: widget.interceptUrls,
       );
     } else {
       Rect rect = _buildRect(context);
@@ -90,7 +91,7 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
         appBar: widget.appBar,
         persistentFooterButtons: widget.persistentFooterButtons,
         bottomNavigationBar: widget.bottomNavigationBar,
-        body: new Center(child: new CircularProgressIndicator()));
+        body: new Container());
   }
 
   Rect _buildRect(BuildContext context) {
