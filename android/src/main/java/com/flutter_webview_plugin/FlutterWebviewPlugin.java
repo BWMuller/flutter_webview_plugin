@@ -23,6 +23,8 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
     private WebviewManager webViewManager;
     static MethodChannel channel;
     private static final String CHANNEL_NAME = "flutter_webview_plugin";
+    private FlutterWebviewConfigurator configurator;
+
 
     public static void registerWith(PluginRegistry.Registrar registrar) {
         channel = new MethodChannel(registrar.messenger(), CHANNEL_NAME);
@@ -90,7 +92,7 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
         boolean scrollBar = call.argument("scrollBar");
 
         if (webViewManager == null || webViewManager.closed == true) {
-            webViewManager = new WebviewManager(activity);
+            webViewManager = new WebviewManager(activity, configurator);
         }
 
         FrameLayout.LayoutParams params = buildLayoutParams(call);
@@ -220,5 +222,10 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
             return webViewManager.resultHandler.handleResult(i, i1, intent);
         }
         return false;
+    }
+
+    @Override
+    public void setConfigurator(FlutterWebviewConfigurator configurator) {
+        this.configurator = configurator;
     }
 }
