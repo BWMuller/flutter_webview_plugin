@@ -18,7 +18,7 @@ import io.flutter.plugin.common.PluginRegistry;
 /**
  * FlutterWebviewPlugin
  */
-public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.ActivityResultListener {
+public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.ActivityResultListener, FlutterWebviewCustomizable {
     private Activity activity;
     private WebviewManager webViewManager;
     static MethodChannel channel;
