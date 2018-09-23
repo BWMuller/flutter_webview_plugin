@@ -19,6 +19,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     FlutterWebviewPlugin* instance = [[FlutterWebviewPlugin alloc] initWithViewController:viewController];
     
     [registrar addMethodCallDelegate:instance channel:channel];
+    [registrar publish:instance];
 }
 
 - (instancetype)initWithViewController:(UIViewController *)viewController {
@@ -245,6 +246,14 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
                                   message:error.localizedDescription
                                   details:error.localizedFailureReason];
     [channel invokeMethod:@"onError" arguments:data];
+}
+
+- (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable))completionHandler {
+    if (self.navigationDelegate) {
+        [self.navigationDelegate webView:webView didReceiveAuthenticationChallenge:challenge completionHandler:completionHandler];
+    } else {
+        completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+    }
 }
 
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {
