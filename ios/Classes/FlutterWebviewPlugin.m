@@ -73,6 +73,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     NSString *userAgent = call.arguments[@"userAgent"];
     NSNumber *withZoom = call.arguments[@"withZoom"];
     NSNumber *scrollBar = call.arguments[@"scrollBar"];
+    NSNumber *javascript = call.arguments[@"withJavascript"];
     
     if (clearCache != (id)[NSNull null] && [clearCache boolValue]) {
         [[NSURLCache sharedURLCache] removeAllCachedResponses];
@@ -87,6 +88,7 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
         [[NSUserDefaults standardUserDefaults] registerDefaults:@{@"UserAgent": userAgent}];
     }
     
+    
     CGRect rc;
     if (rect != nil) {
         rc = [self parseRect:rect];
@@ -100,7 +102,11 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     self.webview.hidden = [hidden boolValue];
     self.webview.scrollView.showsHorizontalScrollIndicator = [scrollBar boolValue];
     self.webview.scrollView.showsVerticalScrollIndicator = [scrollBar boolValue];
-    if (userAgent) {
+    
+    if ([javascript isKindOfClass:[NSNumber class]]) {
+        self.webview.configuration.preferences.javaScriptEnabled = [javascript boolValue];
+    }
+    if ([userAgent isKindOfClass:[NSString class]]) {
         if (@available(iOS 9.0, *)) {
             self.webview.customUserAgent = userAgent;
         }
