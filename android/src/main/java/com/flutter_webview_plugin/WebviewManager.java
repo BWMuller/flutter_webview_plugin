@@ -2,7 +2,6 @@ package com.flutter_webview_plugin;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
@@ -33,6 +32,7 @@ class WebviewManager {
     private ValueCallback<Uri> mUploadMessage;
     private ValueCallback<Uri[]> mUploadMessageArray;
     private final static int FILECHOOSER_RESULTCODE=1;
+    private final FlutterWebviewConfigurator configurator;
 
     @TargetApi(7)
     class ResultHandler {
@@ -74,10 +74,11 @@ class WebviewManager {
     Activity activity;
     ResultHandler resultHandler;
 
-    WebviewManager(final Activity activity) {
+    WebviewManager(final Activity activity, FlutterWebviewConfigurator configurator) {
         this.webView = new ObservableWebView(activity);
         this.activity = activity;
         this.resultHandler = new ResultHandler();
+        this.configurator = configurator;
         WebViewClient webViewClient = new BrowserClient();
         webView.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -169,6 +170,10 @@ class WebviewManager {
                 return true;
             }
         });
+
+        if (configurator != null) {
+            configurator.configureWebview(webView);
+        }
     }
 
     private void clearCookies() {
