@@ -75,7 +75,7 @@ class WebviewManager {
     String token;
 
     WebviewManager(Activity activity, FlutterWebviewConfigurator configurator, List<String> interceptUrls) {
-        this.webView = new WebView(activity);
+        this.webView = new ObservableWebView(activity);
         this.activity = activity;
         this.resultHandler = new ResultHandler();
         this.configurator = configurator;
