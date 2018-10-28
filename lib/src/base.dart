@@ -18,6 +18,7 @@ class FlutterWebviewPlugin {
 
   final _onDestroy = new StreamController<Null>.broadcast();
   final _onUrlChanged = new StreamController<String>.broadcast();
+  final _onError = new StreamController<String>.broadcast();
   final _onStateChanged = new StreamController<WebViewStateChanged>.broadcast();
   final _onScrollXChanged = new StreamController<double>.broadcast();
   final _onScrollYChanged = new StreamController<double>.broadcast();
@@ -67,6 +68,8 @@ class FlutterWebviewPlugin {
       case "onWebError":
         _onWebError.add(null);
         break;
+      case "onError":
+        _onError.add(call.arguments);
     }
   }
 

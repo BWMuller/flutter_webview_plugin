@@ -23,7 +23,6 @@ class WebviewScaffold extends StatefulWidget {
   final bool scrollBar;
 
   final Map<String, String> headers;
-  final Map<String, String> additionalHttpHeaders;
 
   const WebviewScaffold(
       {Key key,
