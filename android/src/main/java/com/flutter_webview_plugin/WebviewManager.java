@@ -144,7 +144,8 @@ class WebviewManager {
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-        token = headers.get("hexindai-token");
+        if (headers != null)
+            token = headers.get("hexindai-token");
         webView.addJavascriptInterface(new JavaScriptinterface(token), "App");
         if (clearCache) {
             clearCache();
