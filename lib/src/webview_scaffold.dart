@@ -15,6 +15,7 @@ class WebviewScaffold extends StatefulWidget {
   final String userAgent;
   final bool primary;
   final List<Widget> persistentFooterButtons;
+  final List<String> interceptUrls;
   final Widget bottomNavigationBar;
   final bool withZoom;
   final bool withLocalStorage;
@@ -22,6 +23,7 @@ class WebviewScaffold extends StatefulWidget {
   final bool scrollBar;
 
   final Map<String, String> headers;
+  final Map<String, String> additionalHttpHeaders;
 
   const WebviewScaffold(
       {Key key,
@@ -39,7 +41,8 @@ class WebviewScaffold extends StatefulWidget {
       this.withZoom,
       this.withLocalStorage,
       this.withLocalUrl,
-      this.scrollBar})
+      this.scrollBar,
+      this.interceptUrls,})
       : super(key: key);
 
   @override
@@ -79,7 +82,8 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
           withZoom: widget.withZoom,
           withLocalStorage: widget.withLocalStorage,
           withLocalUrl: widget.withLocalUrl,
-          scrollBar: widget.scrollBar);
+          scrollBar: widget.scrollBar,
+          interceptUrls: widget.interceptUrls);
     } else {
       final rect = _buildRect(context);
       if (_rect != rect) {

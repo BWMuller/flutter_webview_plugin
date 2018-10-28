@@ -8,20 +8,19 @@ import android.os.Build;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
-import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.webkit.*;
 import android.widget.FrameLayout;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.flutter_webview_plugin.BrowserChromeClient;
+import com.flutter_webview_plugin.BrowserClient;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
 import static android.app.Activity.RESULT_OK;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by lejard_h on 20/12/2017.
@@ -73,13 +72,15 @@ class WebviewManager {
     WebView webView;
     Activity activity;
     ResultHandler resultHandler;
+    String token;
 
-    WebviewManager(final Activity activity, FlutterWebviewConfigurator configurator) {
-        this.webView = new ObservableWebView(activity);
+    WebviewManager(Activity activity, FlutterWebviewConfigurator configurator, List<String> interceptUrls) {
+        this.webView = new WebView(activity);
         this.activity = activity;
         this.resultHandler = new ResultHandler();
         this.configurator = configurator;
-        WebViewClient webViewClient = new BrowserClient();
+        WebViewClient webViewClient = new BrowserClient(interceptUrls);
+        WebChromeClient webChromeClient = new BrowserChromeClient(activity);
         webView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -88,6 +89,7 @@ class WebviewManager {
                         case KeyEvent.KEYCODE_BACK:
                             if (webView.canGoBack()) {
                                 webView.goBack();
+                                webGoBack();
                             } else {
                                 close();
                             }
@@ -98,7 +100,6 @@ class WebviewManager {
                 return false;
             }
         });
-
         ((ObservableWebView) webView).setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback(){
             public void onScroll(int x, int y, int oldx, int oldy){
                 Map<String, Object> yDirection = new HashMap<>();
@@ -111,69 +112,7 @@ class WebviewManager {
         });
 
         webView.setWebViewClient(webViewClient);
-        webView.setWebChromeClient(new WebChromeClient()
-        {
-            //The undocumented magic method override
-            //Eclipse will swear at you if you try to put @Override here
-            // For Android 3.0+
-            public void openFileChooser(ValueCallback<Uri> uploadMsg) {
-
-                mUploadMessage = uploadMsg;
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("image/*");
-                activity.startActivityForResult(Intent.createChooser(i,"File Chooser"), FILECHOOSER_RESULTCODE);
-
-            }
-
-            // For Android 3.0+
-            public void openFileChooser( ValueCallback uploadMsg, String acceptType ) {
-                mUploadMessage = uploadMsg;
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("*/*");
-               activity.startActivityForResult(
-                        Intent.createChooser(i, "File Browser"),
-                        FILECHOOSER_RESULTCODE);
-            }
-
-            //For Android 4.1
-            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture){
-                mUploadMessage = uploadMsg;
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("image/*");
-                activity.startActivityForResult( Intent.createChooser( i, "File Chooser" ), FILECHOOSER_RESULTCODE );
-
-            }
-
-            //For Android 5.0+
-            public boolean onShowFileChooser(
-                    WebView webView, ValueCallback<Uri[]> filePathCallback,
-                    FileChooserParams fileChooserParams){
-                if(mUploadMessageArray != null){
-                    mUploadMessageArray.onReceiveValue(null);
-                }
-                mUploadMessageArray = filePathCallback;
-
-                Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
-                contentSelectionIntent.setType("*/*");
-                Intent[] intentArray;
-                intentArray = new Intent[0];
-
-                Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
-                chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
-                chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
-                activity.startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
-                return true;
-            }
-        });
-
-        if (configurator != null) {
-            configurator.configureWebview(webView);
-        }
+        webView.setWebChromeClient(webChromeClient);
     }
 
     private void clearCookies() {
@@ -199,7 +138,14 @@ class WebviewManager {
         webView.getSettings().setBuiltInZoomControls(withZoom);
         webView.getSettings().setSupportZoom(withZoom);
         webView.getSettings().setDomStorageEnabled(withLocalStorage);
-
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        token = additionalHttpHeaders.get("hexindai-token");
+        webView.addJavascriptInterface(new JavaScriptinterface(token), "App");
         if (clearCache) {
             clearCache();
         }
@@ -227,22 +173,26 @@ class WebviewManager {
         }
     }
 
-    void close(MethodCall call, MethodChannel.Result result) {
-        if (webView != null) {
-            ViewGroup vg = (ViewGroup) (webView.getParent());
-            vg.removeView(webView);
+    void close(boolean goBack, MethodChannel.Result result) {
+        if (goBack && webView.canGoBack()) {
+            webView.goBack();
+            webGoBack();
+        } else {
+            if (webView != null) {
+                ViewGroup vg = (ViewGroup) (webView.getParent());
+                vg.removeView(webView);
+            }
+            webView = null;
+            if (result != null) {
+                result.success(null);
+            }
+            closed = true;
+            FlutterWebviewPlugin.channel.invokeMethod("onDestroy", null);
         }
-        webView = null;
-        if (result != null) {
-            result.success(null);
-        }
-
-        closed = true;
-        FlutterWebviewPlugin.channel.invokeMethod("onDestroy", null);
     }
 
     void close() {
-        close(null, null);
+        close(false, null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -312,4 +262,22 @@ class WebviewManager {
             webView.stopLoading();
         }
     }
+
+    void webGoBack() {
+        FlutterWebviewPlugin.channel.invokeMethod("onWebGoBack", null);
+    }
+
+    public class JavaScriptinterface {
+        String token;
+
+        private JavaScriptinterface(String token) {
+            this.token = token;
+        }
+
+        @JavascriptInterface
+        public String getToken() {
+            return token;
+        }
+    }
+
 }

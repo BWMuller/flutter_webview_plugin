@@ -22,6 +22,9 @@ class FlutterWebviewPlugin {
   final _onScrollXChanged = new StreamController<double>.broadcast();
   final _onScrollYChanged = new StreamController<double>.broadcast();
   final _onHttpError = new StreamController<WebViewHttpError>.broadcast();
+  final _onTitleChanged = new StreamController<String>.broadcast();
+  final _onWebGoBack = new StreamController<Null>.broadcast();
+  final _onWebError = new StreamController<Null>.broadcast();
 
   static FlutterWebviewPlugin _instance;
 
@@ -55,6 +58,15 @@ class FlutterWebviewPlugin {
         _onHttpError.add(
             WebViewHttpError(call.arguments['code'], call.arguments['url']));
         break;
+      case "onTitleChanged":
+        _onTitleChanged.add(call.arguments["title"]);
+        break;
+      case "onWebGoBack":
+        _onWebGoBack.add(null);
+        break;
+      case "onWebError":
+        _onWebError.add(null);
+        break;
     }
   }
 
@@ -76,6 +88,12 @@ class FlutterWebviewPlugin {
   Stream<double> get onScrollXChanged => _onScrollXChanged.stream;
 
   Stream<WebViewHttpError> get onHttpError => _onHttpError.stream;
+
+  Stream<String> get onTitleChanged => _onTitleChanged.stream;
+
+  Stream<Null> get onWebGoBack => _onWebGoBack.stream;
+
+  Stream<Null> get onWebError => _onWebError.stream;
 
   /// Start the Webview with [url]
   /// - [headers] specify additional HTTP headers
@@ -107,7 +125,9 @@ class FlutterWebviewPlugin {
       bool withZoom,
       bool withLocalStorage,
       bool withLocalUrl,
-      bool scrollBar}) async {
+      bool scrollBar,
+      List<String>  interceptUrls,
+    }) async {
     final args = <String, dynamic>{
       'url': url,
       'withJavascript': withJavascript ?? true,
@@ -119,7 +139,8 @@ class FlutterWebviewPlugin {
       'withZoom': withZoom ?? false,
       'withLocalStorage': withLocalStorage ?? true,
       'withLocalUrl': withLocalUrl ?? false,
-      'scrollBar': scrollBar ?? true
+      'scrollBar': scrollBar ?? true,
+      "interceptUrls": interceptUrls ?? []
     };
 
     if (headers != null) {
@@ -145,7 +166,7 @@ class FlutterWebviewPlugin {
 
   /// Close the Webview
   /// Will trigger the [onDestroy] event
-  Future close() => _channel.invokeMethod('close');
+  Future close([bool goBack = false]) => _channel.invokeMethod("close",{'goBack':goBack});
 
   /// Reloads the WebView.
   /// This is only available on Android for now.
@@ -192,6 +213,8 @@ class FlutterWebviewPlugin {
     _onScrollXChanged.close();
     _onScrollYChanged.close();
     _onHttpError.close();
+    _onError.close();
+    _onTitleChanged.close();
     _instance = null;
   }
 
